@@ -1,0 +1,72 @@
+// Offers/Coupons Data
+export interface Offer {
+  id: string;
+  title: string;
+  description: string;
+  discountType: 'flat' | 'percentage';
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  active: boolean;
+  applicableCategories?: string[];
+  minOrderValue?: number;
+  usageCount: number;
+  maxUsage?: number;
+}
+
+export const INITIAL_OFFERS: Offer[] = [
+  {
+    id: '1',
+    title: 'Welcome Offer',
+    description: '20% off on first purchase for new users',
+    discountType: 'percentage',
+    discountValue: 20,
+    startDate: '2024-01-01',
+    endDate: '2024-02-28',
+    active: true,
+    applicableCategories: ['1', '2'],
+    minOrderValue: 1000,
+    usageCount: 3420,
+    maxUsage: 5000,
+  },
+  {
+    id: '2',
+    title: 'Electronics Sale',
+    description: 'Flat Rs. 2000 off on electronics',
+    discountType: 'flat',
+    discountValue: 2000,
+    startDate: '2024-01-15',
+    endDate: '2024-01-31',
+    active: true,
+    applicableCategories: ['1'],
+    minOrderValue: 5000,
+    usageCount: 892,
+  },
+  {
+    id: '3',
+    title: 'Fashion Week',
+    description: '30% off on fashion items',
+    discountType: 'percentage',
+    discountValue: 30,
+    startDate: '2024-02-01',
+    endDate: '2024-02-14',
+    active: true,
+    applicableCategories: ['2'],
+    minOrderValue: 2500,
+    usageCount: 1250,
+    maxUsage: 2000,
+  },
+  {
+    id: '4',
+    title: 'Winter Special',
+    description: '15% off on home and garden items',
+    discountType: 'percentage',
+    discountValue: 15,
+    startDate: '2024-01-01',
+    endDate: '2024-01-20',
+    active: false,
+    applicableCategories: ['3'],
+    minOrderValue: 3000,
+    usageCount: 567,
+  },
+];
