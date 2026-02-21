@@ -7,7 +7,7 @@ Your Zenvirae Admin Dashboard has been fully converted from mock data to a produ
 Add these to your Vercel project environment variables:
 
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
+MONGODB_URI="mongodb url"
 MONGODB_DB=zenvirae
 ```
 
