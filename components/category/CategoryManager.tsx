@@ -2,51 +2,47 @@
 
 import { useState } from 'react'
 import useSWR, { mutate } from 'swr'
-import EditCategoryModal from './EditCategoryModal'
+// import EditCategoryModal from './EditCategoryModal' //not editing for now
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Plus, Edit2, Trash2, Loader } from 'lucide-react'
-
-interface Category {
-  _id?: string
-  id?: string
-  name: string
-  icon: string
-  description: string
-  status: 'active' | 'inactive'
-}
+import { Category } from '@/interface/common/category.models'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function CategoryManager() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  const [newCategoryName, setNewCategoryName] = useState('')
-  const [newCategoryIcon, setNewCategoryIcon] = useState('📂')
   const [loading, setLoading] = useState(false)
+  const [newCategory, setNewCategory] = useState<Category>({ name: '', icon: '📂', description: '' })
 
-  const { data: categories = [], isLoading } = useSWR('/api/categories', fetcher, {
-    revalidateOnFocus: false,
-  })
+  const { data: categories = [], isLoading } = useSWR(
+    '/api/categories',
+    fetcher,
+    { revalidateOnFocus: false, }
+  )
 
   const handleAddCategory = async () => {
-    if (newCategoryName.trim()) {
+    if (newCategory.name.trim()) {
       try {
         setLoading(true)
-        await fetch('/api/categories', {
+        const response = await fetch('/api/categories', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: newCategoryName,
-            icon: newCategoryIcon,
-            description: '',
+            name: newCategory.name,
+            icon: newCategory.icon,
+            description: newCategory.description,
             status: 'active',
           }),
         })
-        mutate('/api/categories')
-        setNewCategoryName('')
-        setNewCategoryIcon('📂')
+        if (response.status === 201) {
+          mutate('/api/categories')
+          setNewCategory({ name: '', icon: '📂', description: '' })
+        } else {
+          console.log('failed to add category :( ', response.status)
+        }
         setShowAddModal(false)
       } catch (error) {
         console.log(' Add category error:', error)
@@ -59,8 +55,12 @@ export default function CategoryManager() {
   const handleDeleteCategory = async (id: string) => {
     try {
       setLoading(true)
-      await fetch(`/api/categories/${id}`, { method: 'DELETE' })
-      mutate('/api/categories')
+      const response = await fetch(`/api/categories/${id}`, { method: 'DELETE' })
+      if (response.status === 200) {
+        mutate('/api/categories')
+      } else {
+        console.log('error in deleting category :( ', response.status)
+      }
     } catch (error) {
       console.log(' Delete category error:', error)
     } finally {
@@ -72,11 +72,14 @@ export default function CategoryManager() {
     try {
       setLoading(true)
       const newStatus = category.status === 'active' ? 'inactive' : 'active'
-      await fetch(`/api/categories/${category._id || category.id}`, {
+      const response = await fetch(`/api/categories/${category._id || category.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...category, status: newStatus }),
       })
+      if (response.status !== 200) {
+        console.log('error in toggling category status :( ', response.status)
+      }
       mutate('/api/categories')
     } catch (error) {
       console.log(' Toggle category error:', error)
@@ -119,17 +122,30 @@ export default function CategoryManager() {
                   Category Name
                 </label>
                 <Input
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  value={newCategory.name}
+                  onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                   placeholder="Enter category name"
                   className="bg-input border-muted"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Category Description
+                </label>
+                <textarea
+                  name="description"
+                  value={newCategory.description}
+                  onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                  placeholder="Enter category description"
+                  rows={2}
+                  className="w-full px-2 py-2 border border-muted rounded-lg bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Icon</label>
                 <Input
-                  value={newCategoryIcon}
-                  onChange={(e) => setNewCategoryIcon(e.target.value)}
+                  value={newCategory.icon}
+                  onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
                   placeholder="Enter emoji or icon"
                   maxLength={2}
                   className="bg-input border-muted"
@@ -164,7 +180,7 @@ export default function CategoryManager() {
                 <div className="text-4xl">{category.icon}</div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleDeleteCategory(category._id || category.id || '')}
+                    onClick={() => handleDeleteCategory(category._id || '')}
                     className="p-2 hover:bg-muted rounded-lg transition text-destructive"
                     title="Delete"
                   >
@@ -177,11 +193,10 @@ export default function CategoryManager() {
               <div className="mt-4 flex items-center justify-between">
                 <button
                   onClick={() => handleToggleActive(category)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition ${
-                    category.status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition ${category.status === 'active'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                    }`}
                 >
                   {category.status === 'active' ? 'Active' : 'Inactive'}
                 </button>

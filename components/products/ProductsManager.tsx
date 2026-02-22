@@ -17,6 +17,7 @@ import {
   TrendingUp,
   Loader,
 } from 'lucide-react'
+import { Product } from '@/interface/common/product.modal'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
@@ -32,7 +33,18 @@ export function ProductsManager() {
     fetcher,
     { revalidateOnFocus: false }
   )
-
+  //fetching categories
+  const { data: categories = [] } = useSWR(
+    '/api/categories?status=active',
+    fetcher,
+    { revalidateOnFocus: false }
+  )
+  //fetching sub-categories
+  const { data: subCategories = [] } = useSWR(
+    '/api/sub-categories?status=active',
+    fetcher,
+    { revalidateOnFocus: false }
+  )
   const filteredProducts = products.filter((product: Product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -54,8 +66,12 @@ export function ProductsManager() {
   const handleDeleteProduct = async (id: string) => {
     try {
       setLoading(true)
-      await fetch(`/api/products/${id}`, { method: 'DELETE' })
-      mutate('/api/products')
+      const response = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+      if (response.status === 200) {
+        mutate('/api/products')
+      } else {
+        console.log("unable to delete product:", response.status)
+      }
     } catch (error) {
       console.log(' Delete error:', error)
     } finally {
@@ -97,14 +113,18 @@ export function ProductsManager() {
           : 'active'
     try {
       setLoading(true)
-      await fetch(`/api/products/${product._id || product.id}`, {
+      const response = await fetch(`/api/products/${product._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...product, status: newStatus }),
       })
-      mutate('/api/products')
+      if (response.status === 200) {
+        mutate('/api/products')
+      } else {
+        console.log("unable to update product status:", response.status)
+      }
     } catch (error) {
-      console.log(' Toggle status error:', error)
+      console.log('error from handleToggleStatus:', error)
     } finally {
       setLoading(false)
     }
@@ -117,8 +137,8 @@ export function ProductsManager() {
   const stats = {
     total: products.length,
     active: products.filter((p: Product) => p.status === 'active').length,
-    lowStock: products.filter((p: Product) => p.stock < 20).length,
-    totalValue: products.reduce((sum: number, p: Product) => sum + p.price * p.stock, 0),
+    lowStock: products.filter((p: Product) => p.stock || 0 < 20).length,
+    totalValue: products.reduce((sum: number, p: Product) => sum + (p.price || 0) * (p.stock || 0), 0),
   }
 
   if (isLoading) {
@@ -246,79 +266,89 @@ export function ProductsManager() {
                     </th>
                   </tr>
                 </thead>
-                <tbody>
-                  {filteredProducts.map((product: Product, index: number) => (
-                    <tr
-                      key={index}
-                      className="border-b border-muted hover:bg-muted/30 transition"
-                    >
-                      <td className="px-4 py-4">
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {product.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {product.description.substring(0, 30)}...
-                          </p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-foreground">
-                        {product.category} - {product.subCategory}
-                      </td>
-                      <td className="px-4 py-4 text-sm font-mono text-muted-foreground">
-                        {product.sku}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="font-semibold text-foreground">
-                          ₹{product.price.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-muted-foreground line-through">
-                          ₹{product.originalPrice.toLocaleString()}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span
-                          className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                            product.stock < 20
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-green-100 text-green-800'
-                          }`}
+                <tbody className="overflow-y-auto max-h-[5vh]">
+                  {
+                    loading ? (
+                      <tr>
+                        <td colSpan={8}>
+                          <div className="flex items-center justify-center h-64">
+                            <Loader className="w-8 h-8 animate-spin text-primary" />
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredProducts.map((product: Product, index: number) => (
+                        <tr
+                          key={index}
+                          className="border-b border-muted hover:bg-muted/30 transition"
                         >
-                          {product.stock} pcs
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <button
-                          onClick={() => handleToggleStatus(product)}
-                          className={`inline-flex px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition ${getStatusColor(
-                            product.status
-                          )}`}
-                        >
-                          {PRODUCT_STATUSES.find(
-                            (s) => s.value === product.status
-                          )?.label}
-                        </button>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleEditProduct(product)}
-                            className="p-2 hover:bg-muted rounded-lg transition text-amber-700 hover:text-amber-900"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProduct(product.id as string)}
-                            className="p-2 hover:bg-muted rounded-lg transition text-red-600 hover:text-red-700"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                          <td className="px-4 py-4">
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {product.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {product.description.substring(0, 30)}...
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-sm text-foreground">
+                            {product.category} - {product.subCategory}
+                          </td>
+                          <td className="px-4 py-4 text-sm font-mono text-muted-foreground">
+                            {product.sku}
+                          </td>
+                          <td className="px-4 py-4 text-right">
+                            <div className="font-semibold text-foreground">
+                              ₹{product.price?.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-muted-foreground line-through">
+                              ₹{product.originalPrice?.toLocaleString()}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span
+                              className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${(product.stock || 0) < 20
+                                ? 'bg-orange-100 text-orange-800'
+                                : 'bg-green-100 text-green-800'
+                                }`}
+                            >
+                              {product.stock} pcs
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <button
+                              onClick={() => handleToggleStatus(product)}
+                              className={`inline-flex px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition ${getStatusColor(
+                                product.status
+                              )}`}
+                            >
+                              {PRODUCT_STATUSES.find(
+                                (s) => s.value === product.status
+                              )?.label}
+                            </button>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleEditProduct(product)}
+                                className="p-2 hover:bg-muted rounded-lg transition text-amber-700 hover:text-amber-900"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(product._id as string)}
+                                className="p-2 hover:bg-muted rounded-lg transition text-red-600 hover:text-red-700"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                 </tbody>
               </table>
             </div>
@@ -343,6 +373,8 @@ export function ProductsManager() {
           product={editingProduct}
           onSave={handleSaveProduct}
           onClose={() => setShowModal(false)}
+          categories={categories}
+          subCategories={subCategories}
         />
       )}
     </div>

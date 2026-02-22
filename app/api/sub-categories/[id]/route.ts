@@ -24,10 +24,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB()
-
+    const params = await context.params;
     if (!Types.ObjectId.isValid(params.id)) {
       return NextResponse.json({ error: 'Invalid sub-category ID' }, { status: 400 })
     }

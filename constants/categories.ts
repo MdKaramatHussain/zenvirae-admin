@@ -43,7 +43,7 @@ export const INITIAL_CATEGORIES: Category[] = [
   },
 ];
 
-export interface SubCategory {
+export interface SubCategoryTemp {
   id: string;
   name: string;
   parentCategoryId: string;
@@ -53,7 +53,7 @@ export interface SubCategory {
   productCount: number;
 }
 
-export const INITIAL_SUB_CATEGORIES: SubCategory[] = [
+export const INITIAL_SUB_CATEGORIES: SubCategoryTemp[] = [
   {
     id: '1',
     name: 'Smartphones',

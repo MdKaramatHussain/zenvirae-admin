@@ -6,8 +6,10 @@ export interface ISubCategory extends Document {
   categoryName: string
   description: string
   status: 'active' | 'inactive'
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
+  image: string
+  productCount: number
 }
 
 const subCategorySchema = new Schema<ISubCategory>(
@@ -17,6 +19,10 @@ const subCategorySchema = new Schema<ISubCategory>(
     categoryName: { type: String, required: true },
     description: { type: String },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    createdAt: { type: String },
+    updatedAt: { type: String },
+    image: { type: String },
+    productCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 )

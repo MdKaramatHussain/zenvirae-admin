@@ -1,55 +1,102 @@
 'use client';
 
 import { useState } from 'react';
-import { INITIAL_CATEGORIES } from '@/constants/categories';
-import { INITIAL_SUB_CATEGORIES, SubCategory } from '@/constants/categories';
+import { INITIAL_CATEGORIES, SubCategoryTemp } from '@/constants/categories';
 import EditSubCategoryModal from './EditSubCategoryModal';
+import useSWR, { mutate } from 'swr';
+import { Category, SubCategory } from '@/interface/common/category.models';
+import { redirect } from 'next/navigation';
 
 export default function SubCategoryManager() {
-  const [subCategories, setSubCategories] = useState<SubCategory[]>(INITIAL_SUB_CATEGORIES);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
-  const [newSubCategoryName, setNewSubCategoryName] = useState('');
-  const [newSubCategoryEmoji, setNewSubCategoryEmoji] = useState('🏷️');
-  const [newParentCategoryId, setNewParentCategoryId] = useState(INITIAL_CATEGORIES[0].id);
+  const [newSubCategory, setNewSubCategory] = useState<SubCategory>({
+    name: '',
+    categoryId: '',
+    categoryName: '',
+    status: 'active',
+    createdAt: '',
+    updatedAt: '',
+    image: '🏷️',
+    productCount: 0,
+  });
 
-  const handleAddSubCategory = () => {
-    if (newSubCategoryName.trim()) {
-      const newSubCategory: SubCategory = {
+  const fetcher = (url: string) => fetch(url).then((res) => res.json())
+  const { data: categories = [] } = useSWR(
+    '/api/categories',
+    fetcher,
+    { revalidateOnFocus: false, }
+  )
+  const { data: subCategories = [] } = useSWR(
+    '/api/sub-categories',
+    fetcher,
+    { revalidateOnFocus: false, }
+  )
+
+  const handleAddSubCategory = async () => {
+    if (newSubCategory.name.trim()) {
+      const setData: SubCategory = {
         id: String(subCategories.length + 1),
-        name: newSubCategoryName,
-        parentCategoryId: newParentCategoryId,
-        image: newSubCategoryEmoji,
-        active: true,
+        name: newSubCategory.name,
+        categoryId: categories.find((cat: Category) => cat.name === newSubCategory.categoryName)?._id || '',
+        categoryName: newSubCategory.categoryName,
+        status: newSubCategory.status,
         createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0],
+        image: newSubCategory.image,
         productCount: 0,
       };
-      setSubCategories([...subCategories, newSubCategory]);
-      setNewSubCategoryName('');
-      setNewSubCategoryEmoji('🏷️');
+      const response = await fetch('/api/sub-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(setData),
+      })
+      if (response.status !== 201) {
+        console.log('failed to add sub category :( ', response.status)
+      }
+      console.log(response)
+      mutate('/api/sub-categories');
+      setNewSubCategory({
+        name: '',
+        categoryId: '',
+        categoryName: '',
+        status: 'active',
+        createdAt: '',
+        updatedAt: '',
+        image: '🏷️',
+        productCount: 0,
+      });
       setShowAddModal(false);
     }
   };
 
-  const handleUpdateSubCategory = (updatedSubCategory: SubCategory) => {
-    setSubCategories(
-      subCategories.map((subCat) =>
-        subCat.id === updatedSubCategory.id ? updatedSubCategory : subCat
-      )
-    );
+  const handleUpdateSubCategory = async (updatedSubCategory: SubCategory) => {
+    const response = await fetch(`/api/sub-categories/${updatedSubCategory._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedSubCategory),
+    })
+    if (response.status !== 200) {
+      console.log('error in updating sub category :( ', response.status)
+    }
+    mutate('/api/sub-categories');
     setEditingSubCategory(null);
   };
 
-  const handleToggleActive = (id: string) => {
-    setSubCategories(
-      subCategories.map((subCat) =>
-        subCat.id === id ? { ...subCat, active: !subCat.active } : subCat
-      )
-    );
-  };
+  const handleToggleActive = async (id: string) => {
+    let subCategory = subCategories.find((subCat: SubCategory) => subCat._id === id);
+    if (!subCategory) return;
 
-  const getParentCategoryName = (categoryId: string) => {
-    return INITIAL_CATEGORIES.find((cat) => cat.id === categoryId)?.name || 'Unknown';
+    subCategory = { ...subCategory, status: subCategory.status === 'active' ? 'inactive' : 'active' };
+    const response = await fetch(`/api/sub-categories/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(subCategory),
+    })
+    if (response.status !== 200) {
+      console.log('error in toggling sub category status :( ', response.status)
+    }
+    mutate('/api/sub-categories');
   };
 
   return (
@@ -77,12 +124,13 @@ export default function SubCategoryManager() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
                 <select
-                  value={newParentCategoryId}
-                  onChange={(e) => setNewParentCategoryId(e.target.value)}
+                  value={newSubCategory.categoryName}
+                  onChange={(e) => setNewSubCategory({ ...newSubCategory, categoryName: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 >
-                  {INITIAL_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
+                  <option value="">---Select parent category---</option>
+                  {categories.map((cat: SubCategory) => (
+                    <option key={cat._id} value={cat.name}>
                       {cat.name}
                     </option>
                   ))}
@@ -92,8 +140,8 @@ export default function SubCategoryManager() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category Name</label>
                 <input
                   type="text"
-                  value={newSubCategoryName}
-                  onChange={(e) => setNewSubCategoryName(e.target.value)}
+                  value={newSubCategory.name}
+                  onChange={(e) => setNewSubCategory({ ...newSubCategory, name: e.target.value })}
                   placeholder="Enter sub category name"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
@@ -102,8 +150,8 @@ export default function SubCategoryManager() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Emoji</label>
                 <input
                   type="text"
-                  value={newSubCategoryEmoji}
-                  onChange={(e) => setNewSubCategoryEmoji(e.target.value)}
+                  value={newSubCategory.image}
+                  onChange={(e) => setNewSubCategory({ ...newSubCategory, image: e.target.value })}
                   maxLength={2}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
@@ -129,27 +177,26 @@ export default function SubCategoryManager() {
 
       {/* Sub Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {subCategories.map((subCategory) => (
+        {subCategories.map((subCategory: SubCategory) => (
           <div
-            key={subCategory.id}
+            key={subCategory.id || subCategory._id}
             className="bg-white rounded-xl shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="text-4xl">{subCategory.image}</div>
               <button
-                onClick={() => handleToggleActive(subCategory.id)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  subCategory.active
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-600'
-                }`}
+                onClick={() => handleToggleActive(subCategory._id || '')}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${subCategory.status == 'active'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-100 text-gray-600'
+                  }`}
               >
-                {subCategory.active ? 'Active' : 'Inactive'}
+                {subCategory.status === 'active' ? 'Active' : 'Inactive'}
               </button>
             </div>
             <h3 className="text-lg font-bold text-gray-900">{subCategory.name}</h3>
             <p className="text-xs text-gray-500 mt-1">
-              Parent: {getParentCategoryName(subCategory.parentCategoryId)}
+              Parent: {subCategory.categoryName}
             </p>
             <p className="text-sm text-gray-500 mt-1">
               {subCategory.productCount} products
@@ -170,6 +217,7 @@ export default function SubCategoryManager() {
           subCategory={editingSubCategory}
           onClose={() => setEditingSubCategory(null)}
           onSave={handleUpdateSubCategory}
+          categories={categories}
         />
       )}
     </div>

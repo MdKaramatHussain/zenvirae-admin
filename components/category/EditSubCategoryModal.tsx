@@ -1,24 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { SubCategory } from '@/constants/categories';
-import { INITIAL_CATEGORIES } from '@/constants/categories';
+// import { SubCategory } from '@/constants/categories';
+// import { INITIAL_CATEGORIES } from '@/constants/categories';
+import { Category, SubCategory } from '@/interface/common/category.models';
 
-interface EditSubCategoryModalProps {
+export interface EditSubCategoryModalProps {
   subCategory: SubCategory;
   onClose: () => void;
   onSave: (subCategory: SubCategory) => void;
+  categories: Category[];
 }
-
 export default function EditSubCategoryModal({
   subCategory,
   onClose,
   onSave,
+  categories,
 }: EditSubCategoryModalProps) {
   const [name, setName] = useState(subCategory.name);
-  const [image, setImage] = useState(subCategory.image);
-  const [active, setActive] = useState(subCategory.active);
-  const [parentCategoryId, setParentCategoryId] = useState(subCategory.parentCategoryId);
+  const [image, setImage] = useState(subCategory.image ? subCategory.image : '');
+  const [active, setActive] = useState(subCategory.status === 'active' ? true : false);
+  const [parentCategoryId, setParentCategoryId] = useState(subCategory.categoryName);
 
   const handleSave = () => {
     if (name.trim()) {
@@ -26,8 +28,8 @@ export default function EditSubCategoryModal({
         ...subCategory,
         name,
         image,
-        active,
-        parentCategoryId,
+        status: active ? 'active' : 'inactive',
+        categoryName: parentCategoryId,
       });
     }
   };
@@ -45,8 +47,8 @@ export default function EditSubCategoryModal({
               onChange={(e) => setParentCategoryId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
             >
-              {INITIAL_CATEGORIES.map((cat) => (
-                <option key={cat.id} value={cat.id}>
+              {categories.map((cat: Category) => (
+                <option key={cat._id} value={cat.name}>
                   {cat.name}
                 </option>
               ))}

@@ -4,34 +4,10 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { X } from 'lucide-react'
+import {EditProductModalProps, Product } from '@/interface/common/product.modal'
+import { Category, SubCategory } from '@/interface/common/category.models'
 
-interface Product {
-  _id?: string
-  id?: string
-  name: string
-  sku: string
-  category: string
-  subCategory: string
-  material: string
-  price: number
-  originalPrice: number
-  discount: number
-  stock: number
-  status: 'active' | 'inactive' | 'draft'
-  colors: string[]
-  sizes: string[]
-  tags: string[]
-  description: string
-  image: string
-}
-
-interface EditProductModalProps {
-  product: Product | null
-  onSave: (product: Product) => void
-  onClose: () => void
-}
-
-export function EditProductModal({ product, onSave, onClose }: EditProductModalProps) {
+export function EditProductModal({ product, onSave, onClose, categories, subCategories }: EditProductModalProps) {
   const [formData, setFormData] = useState<Product>(
     product || {
       name: '',
@@ -39,10 +15,7 @@ export function EditProductModal({ product, onSave, onClose }: EditProductModalP
       category: '',
       subCategory: '',
       material: '',
-      price: 0,
-      originalPrice: 0,
       discount: 0,
-      stock: 0,
       status: 'draft',
       colors: [],
       sizes: [],
@@ -122,6 +95,8 @@ export function EditProductModal({ product, onSave, onClose }: EditProductModalP
       alert('Please fill in name, SKU, and category')
     }
   }
+  //filtering sub-categories based on selected category
+  subCategories = subCategories.filter((subCat) => subCat.categoryName === formData.category)
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
@@ -162,23 +137,37 @@ export function EditProductModal({ product, onSave, onClose }: EditProductModalP
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Category *</label>
-              <Input
+              <select
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                placeholder="Category"
-                className="bg-input border-muted"
-              />
+                className="w-full px-3 py-2 border border-muted rounded-lg bg-input text-foreground"
+              >
+                <option value="">---Select Category---</option>
+                {
+                  categories.map((cat: Category, index: number) => (
+                    <option key={index} value={cat.name}>{cat.name}</option>
+                  ))
+                }
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Sub-Category</label>
-              <Input
+              <select
                 name="subCategory"
                 value={formData.subCategory}
                 onChange={handleInputChange}
-                placeholder="Sub-category"
-                className="bg-input border-muted"
-              />
+                className="w-full px-3 py-2 border border-muted rounded-lg bg-input text-foreground"
+              >
+                {subCategories.length === 0 &&
+                  <option value="">---No sub-categories---</option>
+                }
+                {
+                  subCategories.map((subCat: SubCategory) => (
+                    <option key={subCat._id} value={subCat.name}>{subCat.name}</option>
+                  ))
+                }
+              </select>
             </div>
           </div>
 
