@@ -1,7 +1,8 @@
 'use client';
 
+import { formatDate } from '@/lib/utils';
 import { useState } from 'react';
-import { Offer } from '@/constants/offers';
+// import { Offer } from '@/constants/offers';
 
 interface EditOfferModalProps {
   offer: Offer;
@@ -10,29 +11,28 @@ interface EditOfferModalProps {
 }
 
 export default function EditOfferModal({ offer, onClose, onSave }: EditOfferModalProps) {
-  const [title, setTitle] = useState(offer.title);
+  const [title, setTitle] = useState(offer.code);
   const [description, setDescription] = useState(offer.description);
   const [discountType, setDiscountType] = useState(offer.discountType);
   const [discountValue, setDiscountValue] = useState(offer.discountValue);
-  const [startDate, setStartDate] = useState(offer.startDate);
-  const [endDate, setEndDate] = useState(offer.endDate);
-  const [active, setActive] = useState(offer.active);
+  const [startDate, setStartDate] = useState(formatDate(offer.startDate ? offer.startDate : ''));
+  const [endDate, setEndDate] = useState(formatDate(offer.validUntil ? offer.validUntil : ''));
+  const [active, setActive] = useState(offer.status === 'active');
 
   const handleSave = () => {
-    if (title.trim() && discountValue > 0) {
+    if (title.trim() && discountValue !== null && discountValue > 0) {
       onSave({
         ...offer,
-        title,
+        code: title,
         description,
         discountType,
         discountValue,
         startDate,
-        endDate,
-        active,
+        validUntil: endDate,
+        status: active ? 'active' : 'inactive',
       });
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
@@ -75,7 +75,7 @@ export default function EditOfferModal({ offer, onClose, onSave }: EditOfferModa
               <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
               <input
                 type="number"
-                value={discountValue}
+                value={discountValue !== null ? discountValue : 0}
                 onChange={(e) => setDiscountValue(Number(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
               />

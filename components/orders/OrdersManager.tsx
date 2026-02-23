@@ -6,20 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import EditOrderStatusModal from './EditOrderStatusModal'
-import { Search, Edit2, Trash2, Loader } from 'lucide-react'
-
-interface Order {
-  _id?: string
-  id?: string
-  orderNumber: string
-  customerName: string
-  customerEmail: string
-  customerPhone: string
-  totalAmount: number
-  orderStatus: 'pending' | 'processing' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
-  paymentStatus: 'pending' | 'completed' | 'failed'
-  createdAt: string
-}
+import { Search, Edit2, Trash2, Loader, Eye } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
+import { ViewOrderModal } from './ViewOrderModal'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 const ORDER_STATUSES = [
@@ -37,6 +26,7 @@ export default function OrdersManager() {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [viewModel, setViewModel] = useState(true)
 
   const { data: orders = [], isLoading } = useSWR(
     `/api/orders${filterStatus !== 'all' ? `?status=${filterStatus}` : ''}`,
@@ -55,7 +45,12 @@ export default function OrdersManager() {
   const handleDeleteOrder = async (id: string) => {
     try {
       setLoading(true)
-      await fetch(`/api/orders/${id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/orders/${id}`, { method: 'DELETE' })
+      if (!response.ok) {
+        alert('Failed to delete order')
+        console.log(response.statusText)
+        return
+      }
       mutate('/api/orders')
     } catch (error) {
       console.log(' Delete order error:', error)
@@ -72,11 +67,16 @@ export default function OrdersManager() {
   const handleSaveOrder = async (updatedOrder: Order) => {
     try {
       setLoading(true)
-      await fetch(`/api/orders/${editingOrder?._id || editingOrder?.id}`, {
+      const response = await fetch(`/api/orders/${editingOrder?._id || editingOrder?.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedOrder),
       })
+      if (!response.ok) {
+        alert('Failed to update order')
+        console.log(response.statusText)
+        return
+      }
       mutate('/api/orders')
       setShowModal(false)
     } catch (error) {
@@ -104,7 +104,6 @@ export default function OrdersManager() {
     delivered: orders.filter((o: Order) => o.orderStatus === 'delivered').length,
     totalValue: orders.reduce((sum: number, o: Order) => sum + o.totalAmount, 0),
   }
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -185,75 +184,92 @@ export default function OrdersManager() {
                 ))}
               </select>
             </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-muted bg-muted/40">
-                    <th className="text-left px-4 py-3 font-semibold text-sm text-foreground">
-                      Order
-                    </th>
-                    <th className="text-left px-4 py-3 font-semibold text-sm text-foreground">
-                      Customer
-                    </th>
-                    <th className="text-right px-4 py-3 font-semibold text-sm text-foreground">
-                      Amount
-                    </th>
-                    <th className="text-center px-4 py-3 font-semibold text-sm text-foreground">
-                      Status
-                    </th>
-                    <th className="text-center px-4 py-3 font-semibold text-sm text-foreground">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map((order: Order) => (
-                    <tr
-                      key={order._id || order.id}
-                      className="border-b border-muted hover:bg-muted/30 transition"
-                    >
-                      <td className="px-4 py-4">
-                        <p className="font-medium text-foreground">{order.orderNumber}</p>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div>
-                          <p className="text-sm text-foreground">{order.customerName}</p>
-                          <p className="text-xs text-muted-foreground">{order.customerEmail}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <p className="font-semibold text-foreground">₹{order.totalAmount.toLocaleString()}</p>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.orderStatus)}`}>
-                          {ORDER_STATUSES.find((s) => s.value === order.orderStatus)?.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleEditOrder(order)}
-                            className="p-2 hover:bg-muted rounded-lg transition text-primary hover:text-primary/80"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteOrder(order._id || order.id || '')}
-                            className="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-muted bg-muted/40">
+                      <th className="text-left px-3 py-3 font-semibold text-sm text-foreground">
+                        Order
+                      </th>
+                      <th className="text-left px-3 py-3 font-semibold text-sm text-foreground">
+                        Customer
+                      </th>
+                      <th className="text-left px-3 py-3 font-semibold text-sm text-foreground">
+                        Order Date
+                      </th>
+                      <th className="text-right px-3 py-3 font-semibold text-sm text-foreground">
+                        Amount
+                      </th>
+                      <th className="text-center px-3 py-3 font-semibold text-sm text-foreground">
+                        Status
+                      </th>
+                      <th className="text-center px-3 py-3 font-semibold text-sm text-foreground">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map((order: Order) => (
+                      <tr
+                        key={order._id || order.id}
+                        className="border-b border-muted hover:bg-muted/30 transition"
+                      >
+                        <td className="px-3 py-4">
+                          <p className="font-medium text-foreground">{order.orderNumber}</p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <div>
+                            <p className="text-sm text-foreground">{order.customerName}</p>
+                            <p className="text-xs text-muted-foreground">{order.customerEmail}</p>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="text-sm font-semibold">{formatDate(order.createdAt)}</p>
+                        </td>
+                        <td className="px-3 py-4 text-right">
+                          <p className="font-semibold text-foreground">₹{order.totalAmount.toLocaleString()}</p>
+                        </td>
+                        <td className="px-3 py-4 text-center">
+                          <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.orderStatus)}`}>
+                            {ORDER_STATUSES.find((s) => s.value === order.orderStatus)?.label}
+                          </span>
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleEditOrder(order)}
+                              className="p-2 hover:bg-muted rounded-lg transition text-primary hover:text-primary/80"
+                              title="Edit"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteOrder(order._id || order.id || '')}
+                              className="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              // onClick={() => handleDeleteOrder(order._id || order.id || '')}
+                              className="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             {filteredOrders.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-lg">No orders found.</p>
@@ -272,6 +288,12 @@ export default function OrdersManager() {
           order={editingOrder}
           onSave={handleSaveOrder}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {viewModel && (
+        <ViewOrderModal        
+          onClose={() => setViewModel(false)}
         />
       )}
     </div>

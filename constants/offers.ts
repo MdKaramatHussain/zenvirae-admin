@@ -1,18 +1,4 @@
-// Offers/Coupons Data
-export interface Offer {
-  id: string;
-  title: string;
-  description: string;
-  discountType: 'flat' | 'percentage';
-  discountValue: number;
-  startDate: string;
-  endDate: string;
-  active: boolean;
-  applicableCategories?: string[];
-  minOrderValue?: number;
-  usageCount: number;
-  maxUsage?: number;
-}
+
 
 export const INITIAL_OFFERS: Offer[] = [
   {
