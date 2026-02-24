@@ -10,4 +10,5 @@ interface Order {
     orderStatus: 'pending' | 'processing' | 'packed' | 'shipped' | 'delivered' | 'cancelled'
     paymentStatus: 'pending' | 'completed' | 'failed'
     createdAt: string
+    items?: Array<{ name: string }>
 }

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Plus, Edit2, Trash2, Loader } from 'lucide-react'
 import { Category } from '@/interface/common/category.models'
+import { DeleteAlert } from '../common/deleteAlter'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
@@ -179,13 +180,22 @@ export default function CategoryManager() {
               <div className="flex items-start justify-between mb-4">
                 <div className="text-4xl">{category.icon}</div>
                 <div className="flex gap-2">
-                  <button
+                  {/* <button
                     onClick={() => handleDeleteCategory(category._id || '')}
                     className="p-2 hover:bg-muted rounded-lg transition text-destructive"
                     title="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </button> */}
+                  <DeleteAlert
+                    id={category.id || ''}
+                    onConfirm={() => handleDeleteCategory(category._id || '')}
+                    css="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
+                    title="Delete"
+                    data={
+                      `${category.icon} ${category.name} -> ${category.description}`
+                    }
+                  />
                 </div>
               </div>
               <h3 className="font-serif font-bold text-foreground text-lg">{category.name}</h3>

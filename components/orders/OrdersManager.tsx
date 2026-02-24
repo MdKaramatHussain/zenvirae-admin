@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import useSWR, { mutate } from 'swr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import EditOrderStatusModal from './EditOrderStatusModal'
 import { Search, Edit2, Trash2, Loader, Eye } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { ViewOrderModal } from './ViewOrderModal'
+import { DeleteAlert } from '../common/deleteAlter'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 const ORDER_STATUSES = [
@@ -26,7 +27,8 @@ export default function OrdersManager() {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [viewModel, setViewModel] = useState(true)
+  const [viewModel, setViewModel] = useState(false)
+  const viewOrderIdRef = useRef<string | null>(null)
 
   const { data: orders = [], isLoading } = useSWR(
     `/api/orders${filterStatus !== 'all' ? `?status=${filterStatus}` : ''}`,
@@ -55,7 +57,7 @@ export default function OrdersManager() {
     } catch (error) {
       console.log(' Delete order error:', error)
     } finally {
-      setLoading(false)
+      setTimeout(() => setLoading(false), 1000)
     }
   }
 
@@ -88,6 +90,11 @@ export default function OrdersManager() {
 
   const getStatusColor = (status: string) => {
     return ORDER_STATUSES.find((s) => s.value === status)?.color || ''
+  }
+
+  const handleView = (id: string) => {
+    viewOrderIdRef.current = id
+    setViewModel(!viewModel)
   }
 
   if (isLoading) {
@@ -242,26 +249,35 @@ export default function OrdersManager() {
                         <td className="px-3 py-4">
                           <div className="flex items-center justify-center gap-2">
                             <button
+                              onClick={() => handleView(order._id || '')}
+                              className="p-2 hover:bg-muted rounded-lg transition text-primary hover:text-primary/80"
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
                               onClick={() => handleEditOrder(order)}
                               className="p-2 hover:bg-muted rounded-lg transition text-primary hover:text-primary/80"
                               title="Edit"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
-                            <button
+                            {/* <button
                               onClick={() => handleDeleteOrder(order._id || order.id || '')}
                               className="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              // onClick={() => handleDeleteOrder(order._id || order.id || '')}
-                              className="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
+                            </button> */}
+                            <DeleteAlert
+                              id={order.orderNumber}
+                              onConfirm={() => handleDeleteOrder(order._id || order.id || '')}
+                              css="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
+                              title="Delete"
+                              data={
+                                `${order.orderNumber} ${order.items?.map((item: { name: string }) => item.name).join(", ")}`
+                              }
+                            />
                           </div>
                         </td>
                       </tr>
@@ -292,7 +308,8 @@ export default function OrdersManager() {
       )}
 
       {viewModel && (
-        <ViewOrderModal        
+        <ViewOrderModal
+          orderID={viewOrderIdRef.current}
           onClose={() => setViewModel(false)}
         />
       )}

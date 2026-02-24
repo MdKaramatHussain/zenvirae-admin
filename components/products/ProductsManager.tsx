@@ -18,6 +18,7 @@ import {
   Loader,
 } from 'lucide-react'
 import { Product } from '@/interface/common/product.modal'
+import { DeleteAlert } from '../common/deleteAlter'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
@@ -337,13 +338,22 @@ export function ProductsManager() {
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
-                              <button
+                              {/* <button
                                 onClick={() => handleDeleteProduct(product._id as string)}
                                 className="p-2 hover:bg-muted rounded-lg transition text-red-600 hover:text-red-700"
                                 title="Delete"
                               >
                                 <Trash2 className="w-4 h-4" />
-                              </button>
+                              </button> */}
+                              <DeleteAlert
+                                id={product.sku}
+                                onConfirm={() => handleDeleteProduct(product._id as string)}
+                                css="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
+                                title="Delete"
+                                data={
+                                  `${product.category} -> ${product.subCategory} -> ${product.name}`
+                                }
+                              />
                             </div>
                           </td>
                         </tr>

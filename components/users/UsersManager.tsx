@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import EditUserModal from './EditUserModal'
 import { Search, Edit2, Trash2, Loader } from 'lucide-react'
+import { DeleteAlert } from '../common/deleteAlter'
 
 interface User {
   _id?: string
@@ -174,10 +175,10 @@ export default function UsersManager() {
                         <button
                           onClick={() => handleToggleStatus(user)}
                           className={`inline-flex px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition ${user.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : user.status === 'inactive'
-                                ? 'bg-gray-100 text-gray-800'
-                                : 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 text-green-800'
+                            : user.status === 'inactive'
+                              ? 'bg-gray-100 text-gray-800'
+                              : 'bg-red-100 text-red-800'
                             }`}
                         >
                           {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
@@ -195,13 +196,22 @@ export default function UsersManager() {
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => handleDeleteUser(user._id || user.id || '')}
                             className="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
+                          </button> */}
+                          <DeleteAlert
+                            id={user.id || user.phone}
+                            onConfirm={() => handleDeleteUser(user._id || user.id || '')}
+                            css="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
+                            title="Delete"
+                            data={
+                              `${user.name} (${user.email})`
+                            }
+                          />
                         </div>
                       </td>
                     </tr>
