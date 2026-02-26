@@ -193,7 +193,7 @@ export default function CategoryManager() {
                     css="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
                     title="Delete"
                     data={
-                      `${category.icon} ${category.name} -> ${category.description}`
+                      `${category.icon} ${category.name}(${category.description})`
                     }
                   />
                 </div>

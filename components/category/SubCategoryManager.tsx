@@ -6,6 +6,7 @@ import EditSubCategoryModal from './EditSubCategoryModal';
 import useSWR, { mutate } from 'swr';
 import { Category, SubCategory } from '@/interface/common/category.models';
 import { redirect } from 'next/navigation';
+import { DeleteAlert } from '../common/deleteAlter';
 
 export default function SubCategoryManager() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -98,6 +99,10 @@ export default function SubCategoryManager() {
     }
     mutate('/api/sub-categories');
   };
+
+  const handleDeleteSubCategory = async (id: string) => {
+    alert(id)
+  }
 
   return (
     <div className="space-y-6">
@@ -207,6 +212,16 @@ export default function SubCategoryManager() {
             >
               Edit
             </button>
+            <DeleteAlert
+              id={subCategory.name}
+              text='Delete'
+              onConfirm={() => handleDeleteSubCategory(subCategory._id || '')}
+              css="mt-4 w-full px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg transition-colors font-medium"
+              title="Delete"
+              data={
+                `${subCategory.image} ${subCategory.name}(${subCategory.categoryName})`
+              }
+            />
           </div>
         ))}
       </div>

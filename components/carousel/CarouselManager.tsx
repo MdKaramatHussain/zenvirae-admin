@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { INITIAL_CAROUSEL_IMAGES } from '@/constants/carousel';
 import { Loader } from 'lucide-react';
+import { DeleteAlert } from '../common/deleteAlter';
 
 export default function CarouselManager() {
   const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
@@ -84,7 +84,7 @@ export default function CarouselManager() {
       console.log('Error updating carousel image:', error)
     }
   };
-  
+
   const handleDeleteImage = async (id: string | undefined) => {
     try {
       const response = await fetch(`/api/carousel/${id}`, {
@@ -284,13 +284,20 @@ export default function CarouselManager() {
                 >
                   ⬇️
                 </button>
-                <button
+                {/* <button
                   onClick={() => handleDeleteImage(img._id)}
                   className="p-2 rounded hover:bg-red-100 text-red-600 transition-colors"
                   title="Delete"
                 >
                   🗑️
-                </button>
+                </button> */}
+                <DeleteAlert
+                  id={''}
+                  onConfirm={() => handleDeleteImage(img._id)}
+                  css="p-2 hover:bg-muted rounded-lg transition text-destructive hover:text-destructive/80"
+                  title="Delete"
+                  data={img.title}
+                />
               </div>
             </div>
           ))
