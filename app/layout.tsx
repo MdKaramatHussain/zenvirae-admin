@@ -10,8 +10,8 @@ const _playfair = Playfair_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Zenvirae Admin Dashboard',
-  description: 'Premium admin dashboard for managing e-commerce operations, orders, users, categories, and more',
-  generator: 'v0.app',
+  description: 'Admin dashboard for managing zenvirae operations such as orders, users, categories, and more',
+  generator: 'Karamat',
   icons: {
     icon: [
       {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/icon.svg',
+        url: '/zenvirae-favicon.svg',
         type: 'image/svg+xml',
       },
     ],

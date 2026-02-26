@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { SHOP_INFO, ADMIN_INFO } from '@/constants/app';
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -24,10 +26,13 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className="hidden md:block">
-            <h1 className="text-2xl font-serif font-bold text-foreground">{SHOP_INFO.name}</h1>
-            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
-          </div>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="hidden md:block">
+              {/* <h1 className="text-2xl font-serif font-bold text-foreground">{SHOP_INFO.image}</h1> */}
+              <Image src={SHOP_INFO.image} alt={`${SHOP_INFO.name} Logo`} width={150} height={32} className="rounded-full" />
+              <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+            </div>
+          </Link>
         </div>
 
         {/* Right: Admin Profile Dropdown */}

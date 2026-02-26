@@ -5,7 +5,7 @@ import { INITIAL_OFFERS } from '@/constants/offers';
 import EditOfferModal from './EditOfferModal';
 import useSWR, { mutate } from 'swr';
 import { Loader } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { fetcher, formatDate } from '@/lib/utils';
 import isEqual from "lodash/isEqual"
 
 export default function OfferManager() {
@@ -24,7 +24,6 @@ export default function OfferManager() {
     maxUses: 10
   });
 
-  const fetcher = (url: string) => fetch(url).then(res => res.json());
   //fetching offer data from the backend using swr
   const { data: offers = [], isLoading } = useSWR(
     '/api/offers',

@@ -7,11 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import EditOrderStatusModal from './EditOrderStatusModal'
 import { Search, Edit2, Trash2, Loader, Eye } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { fetcher, formatDate } from '@/lib/utils'
 import { ViewOrderModal } from './ViewOrderModal'
 import { DeleteAlert } from '../common/deleteAlter'
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
 const ORDER_STATUSES = [
   { value: 'pending', label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
   { value: 'processing', label: 'Processing', color: 'bg-blue-100 text-blue-800' },

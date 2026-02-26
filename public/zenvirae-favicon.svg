@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Bold Z Shape -->
+  <path d="M32 32 H224 V64 H96 L224 192 V224 H32 V192 H160 L32 64 Z"
+        fill="#1A1F2B"/>
+
+  <!-- Accent -->
+  <path d="M150 85 L224 32 V64 L170 120 Z"
+        fill="#4C5CFF"/>
+
+</svg>

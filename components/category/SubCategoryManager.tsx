@@ -7,6 +7,7 @@ import useSWR, { mutate } from 'swr';
 import { Category, SubCategory } from '@/interface/common/category.models';
 import { redirect } from 'next/navigation';
 import { DeleteAlert } from '../common/deleteAlter';
+import { fetcher } from '@/lib/utils';
 
 export default function SubCategoryManager() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -21,8 +22,7 @@ export default function SubCategoryManager() {
     image: '🏷️',
     productCount: 0,
   });
-
-  const fetcher = (url: string) => fetch(url).then((res) => res.json())
+  
   const { data: categories = [] } = useSWR(
     '/api/categories',
     fetcher,

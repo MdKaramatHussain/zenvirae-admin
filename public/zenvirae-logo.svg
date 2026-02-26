@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="900" height="180" viewBox="0 0 900 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Custom Z -->
+  <g transform="translate(0,20)">
+    <path d="M10 20 H170 V45 H60 L175 140 V160 H0 V135 H120 L10 40 Z" fill="#1A1F2B"/>
+    <!-- Indigo Accent Cut -->
+    <path d="M105 60 L170 20 V45 L130 90 Z" fill="#4C5CFF"/>
+  </g>
+
+  <!-- Wordmark Text -->
+  <text x="220" y="125"
+        font-family="Inter, Helvetica Neue, Arial, sans-serif"
+        font-size="110"
+        font-weight="600"
+        letter-spacing="6"
+        fill="#1A1F2B">
+    ENVIRAE
+  </text>
+
+</svg>

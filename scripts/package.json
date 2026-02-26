@@ -1,9 +1,9 @@
 {
   "name": "scripts",
   "version": "1.0.0",
-  "main": "seed-mongodb.js",
+  "main": "seed-admin.js",
   "scripts": {
-    "start": "nodemon seed-mongodb.js",
+    "start": "nodemon seed-admin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
     "nodemon": "^3.1.13"
   }

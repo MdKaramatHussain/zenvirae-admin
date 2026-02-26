@@ -3,6 +3,7 @@
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Dialog } from '@/components/ui/dialog'
+import { fetcher } from '@/lib/utils'
 
 interface OrderItem {
     productId: string
@@ -30,8 +31,6 @@ interface ViewOrderModalParams {
     orderID: string | null
     onClose: () => void
 }
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 function formatDate(d: any) {
     if (!d) return ''

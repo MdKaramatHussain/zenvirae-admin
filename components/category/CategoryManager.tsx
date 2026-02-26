@@ -9,8 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Plus, Edit2, Trash2, Loader } from 'lucide-react'
 import { Category } from '@/interface/common/category.models'
 import { DeleteAlert } from '../common/deleteAlter'
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+import { fetcher } from '@/lib/utils'
 
 export default function CategoryManager() {
   const [showAddModal, setShowAddModal] = useState(false)

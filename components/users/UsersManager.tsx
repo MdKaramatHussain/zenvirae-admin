@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import EditUserModal from './EditUserModal'
 import { Search, Edit2, Trash2, Loader } from 'lucide-react'
 import { DeleteAlert } from '../common/deleteAlter'
+import { fetcher } from '@/lib/utils'
 
 interface User {
   _id?: string
@@ -21,8 +22,6 @@ interface User {
   totalSpent: number
   joinedDate: string
 }
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function UsersManager() {
   const [editingUser, setEditingUser] = useState<User | null>(null)

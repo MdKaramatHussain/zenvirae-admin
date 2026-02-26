@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatCard from '@/components/dashboard/StatCard'
 import { Loader } from 'lucide-react'
 import { RECENT_INFO } from '@/constants/dashboard'
+import Link from 'next/link'
 
 export default function DashboardPage() {
   const [statsData, setStatsData] = useState<StatsData | null>(null)
@@ -44,6 +45,7 @@ export default function DashboardPage() {
       value: statsData?.totalUsers || 0,
       trend: '+12%',
       color: 'from-blue-50 to-blue-100 border-blue-200',
+      path: '/users',
     },
     {
       icon: '📦',
@@ -51,6 +53,7 @@ export default function DashboardPage() {
       value: statsData?.totalOrders || 0,
       trend: '+8%',
       color: 'from-green-50 to-green-100 border-green-200',
+      path: '/orders',
     },
     {
       icon: '💰',
@@ -58,6 +61,7 @@ export default function DashboardPage() {
       value: `₹${((statsData?.totalRevenue || 0) / 100000).toFixed(1)}L`,
       trend: '+15%',
       color: 'from-purple-50 to-purple-100 border-purple-200',
+      path: '/dashboard',
     },
     {
       icon: '🏷️',
@@ -65,6 +69,7 @@ export default function DashboardPage() {
       value: statsData?.totalCategories || 0,
       trend: '+2%',
       color: 'from-orange-50 to-orange-100 border-orange-200',
+      path: '/categories',
     },
     {
       icon: '🎁',
@@ -72,6 +77,7 @@ export default function DashboardPage() {
       value: statsData?.totalOffers || 0,
       trend: '+5%',
       color: 'from-pink-50 to-pink-100 border-pink-200',
+      path: '/offers',
     },
     {
       icon: '👕',
@@ -79,6 +85,7 @@ export default function DashboardPage() {
       value: statsData?.totalProducts || 0,
       trend: '+3%',
       color: 'from-indigo-50 to-indigo-100 border-indigo-200',
+      path: '/products',
     },
   ]
 
@@ -94,14 +101,17 @@ export default function DashboardPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {stats.map((stat) => (
-            <StatCard
-              key={stat.label}
-              icon={stat.icon}
-              label={stat.label}
-              value={stat.value}
-              trend={stat.trend}
-              color={stat.color}
-            />
+            <Link href={stat.path}
+              key={stat.label}>
+              <StatCard
+                key={stat.label}
+                icon={stat.icon}
+                label={stat.label}
+                value={stat.value}
+                trend={stat.trend}
+                color={stat.color}
+              />
+            </Link>
           ))}
         </div>
 

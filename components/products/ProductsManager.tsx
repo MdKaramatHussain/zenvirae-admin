@@ -19,8 +19,9 @@ import {
 } from 'lucide-react'
 import { Product } from '@/interface/common/product.modal'
 import { DeleteAlert } from '../common/deleteAlter'
+import { fetcher } from '@/lib/utils'
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
 
 export function ProductsManager() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -134,11 +135,12 @@ export function ProductsManager() {
   const getStatusColor = (status: string) => {
     return PRODUCT_STATUSES.find((s) => s.value === status)?.color || ''
   }
-
   const stats = {
     total: products.length,
     active: products.filter((p: Product) => p.status === 'active').length,
-    lowStock: products.filter((p: Product) => p.stock || 0 < 20).length,
+    inactive: products.filter((p: Product) => p.status === 'inactive').length,
+    draft: products.filter((p: Product) => p.status === 'draft').length,
+    lowStock: products.filter((p: Product) => (p.stock || 0) < 20).length,
     totalValue: products.reduce((sum: number, p: Product) => sum + (p.price || 0) * (p.stock || 0), 0),
   }
 
@@ -168,8 +170,9 @@ export function ProductsManager() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">Active</p>
-                <p className="text-3xl font-bold text-green-900">{stats.active}</p>
+                <p className="text-sm font-medium text-green-600">{filterStatus == 'inactive' ? 'Inactive' : filterStatus == 'draft' ? 'Draft' : 'Active'}</p>
+                {/* <p className="text-3xl font-bold text-green-900">{stats.active}</p> */}
+                <p className="text-3xl font-bold text-green-900">{filterStatus == 'inactive' ? stats.inactive : filterStatus == 'draft' ? stats.draft : stats.active}</p>
               </div>
               <Eye className="w-8 h-8 text-green-500 opacity-50" />
             </div>

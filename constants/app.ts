@@ -2,6 +2,7 @@
 export const SHOP_INFO = {
   name: 'Zenvirae',
   logo: '✨',
+  image: '/zenvirae-logo.svg',
 };
 
 export const ADMIN_INFO = {
